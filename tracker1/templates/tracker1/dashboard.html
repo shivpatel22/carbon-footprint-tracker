@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Your Dashboard</h2>
+
+<!-- 🔍 Search Form -->
+<form method="get" class="row g-2 mb-4">
+    <div class="col-md-6">
+        <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search description...">
+    </div>
+    <div class="col-md-4">
+        <select name="type" class="form-select">
+            <option value="">All Types</option>
+            <option value="travel" {% if selected_type == 'travel' %}selected{% endif %}>Travel</option>
+            <option value="electricity" {% if selected_type == 'electricity' %}selected{% endif %}>Electricity</option>
+            <option value="food" {% if selected_type == 'food' %}selected{% endif %}>Food</option>
+            <option value="other" {% if selected_type == 'other' %}selected{% endif %}>Other</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-outline-primary w-100">Search</button>
+    </div>
+</form>
+
+<p><strong>Total CO₂ emitted:</strong> {{ total }} kg</p>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Activity</th>
+      <th>Description</th>
+      <th>CO₂ Emitted</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for log in logs %}
+    <tr>
+      <td>{{ log.date }}</td>
+      <td>{{ log.get_activity_type_display }}</td>
+      <td>{{ log.description }}</td>
+      <td>{{ log.co2_emitted }} kg</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4">No matching records found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

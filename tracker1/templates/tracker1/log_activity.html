@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Log New Activity</h2>
+<p class="text-muted">Enter details relevant to your activity type:</p>
+<ul>
+  <li><strong>Travel:</strong> Distance in km</li>
+  <li><strong>Electricity:</strong> Usage in kWh</li>
+  <li><strong>Food:</strong> Number of meals</li>
+</ul>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="btn btn-success">Log Activity</button>
+</form>
+{% endblock %}

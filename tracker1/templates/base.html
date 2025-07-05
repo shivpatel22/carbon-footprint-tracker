@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Carbon Tracker</title>
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+  <div class="container">
+    <a class="navbar-brand" href="/">Carbon Tracker</a>
+
+    <div class="collapse navbar-collapse justify-content-end">
+      {% if user.is_authenticated %}
+        <span class="navbar-text text-white me-3">Welcome, {{ user.username }}</span>
+        <a class="btn btn-outline-light btn-sm me-2" href="{% url 'profile' %}">Profile</a>
+        <a class="btn btn-light btn-sm" href="{% url 'logout' %}">Logout</a>
+      {% else %}
+        <a class="btn btn-light btn-sm" href="{% url 'login' %}">Login</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+
+
+    <!-- Main Content -->
+    <main class="container my-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white mt-auto py-3">
+    <div class="container text-center">
+        <p class="mb-1">© 2025 Carbon Tracker | Green Future Initiative</p>
+        <p class="mb-0">
+            <a href="mailto:support@carbontracker.com" class="text-white me-3">support@carbontracker.com</a>
+            <a href="{% url 'dashboard' %}" class="text-white me-3">Dashboard</a>
+            <a href="{% url 'upload_file' %}" class="text-white me-3">Upload</a>
+            <a href="{% url 'about' %}" class="text-white me-3">About</a>
+            <a href="{% url 'contact' %}" class="text-white me-3">Contact</a>
+            <a href="{% url 'team' %}" class="text-white me-3">Team</a>
+            <a href="{% url 'leaderboard' %}" class="text-white me-3">Leaderboard</a>
+            <a href="{% url 'charts' %}" class="text-white">Charts</a>
+        </p>
+    </div>
+</footer>
+
+
+    <!-- Optional: Bootstrap JS (for dropdowns, etc.) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

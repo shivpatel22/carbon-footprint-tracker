@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>My Uploaded Files</h2>
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>File</th>
+      <th>Date Uploaded</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for upload in uploads %}
+    <tr>
+      <td>{{ upload.title }}</td>
+      <td><a href="{{ upload.upload.url }}" target="_blank">View</a></td>
+      <td>{{ upload.timestamp }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="3">No uploads yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

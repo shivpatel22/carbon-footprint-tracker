@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container text-center">
+    <h2>Hello, {{ user.username }}!</h2>
+    <p>Welcome to your Carbon Footprint Tracker profile.</p>
+
+    <p><strong>Total site visits this session:</strong> {{ visits }}</p>
+    <p><strong>Visits today:</strong> {{ visits_today }}</p>
+
+    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mt-3">
+        <a href="{% url 'log_activity' %}" class="btn btn-primary">Log Activity</a>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-success">View Dashboard</a>
+        <a href="{% url 'charts' %}" class="btn btn-outline-info">View My Carbon Chart</a>
+        <a href="{% url 'upload_file' %}" class="btn btn-outline-warning">Upload a File</a>
+        <a href="{% url 'my_uploads' %}" class="btn btn-outline-secondary">View My Uploads</a>
+        <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
+    </div>
+
+{% if tips %}
+<div class="alert alert-info mt-4">
+    <h5> Eco Tips Based on Your Activity:</h5>
+    <ul class="mb-0">
+        {% for tip in tips %}
+            <li>{{ tip }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+</div>
+{% endblock %}
