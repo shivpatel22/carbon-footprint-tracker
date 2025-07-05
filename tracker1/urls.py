@@ -23,6 +23,8 @@ urlpatterns = [
     path('team/', views.team_view, name='team'),
     path('charts/', views.chart_view, name='charts'),
     path('leaderboard/', views.leaderboard_view, name='leaderboard'),
+    path('edit-log/<int:log_id>/', views.edit_activity, name='edit_activity'),
+
 
 
 ]

@@ -24,6 +24,36 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Sum
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404
+from django.contrib import messages
+
+@login_required
+def edit_activity(request, log_id):
+    log = get_object_or_404(ActivityLog, id=log_id, user=request.user)
+
+    if request.method == 'POST':
+        form = ActivityLogForm(request.POST, instance=log)
+        if form.is_valid():
+            activity = form.save(commit=False)
+
+            # Recalculate CO₂
+            if activity.activity_type == 'travel':
+                activity.co2_emitted = activity.input_value * 0.21
+            elif activity.activity_type == 'electricity':
+                activity.co2_emitted = activity.input_value * 0.45
+            elif activity.activity_type == 'food':
+                activity.co2_emitted = activity.input_value * 1.5
+            else:
+                activity.co2_emitted = activity.input_value * 0.3
+
+            activity.save()
+            messages.success(request, "Activity updated successfully.")
+            return redirect('dashboard')
+    else:
+        form = ActivityLogForm(instance=log)
+
+    return render(request, 'tracker1/edit_activity.html', {'form': form, 'log': log})
+
 
 @login_required
 def leaderboard_view(request):
@@ -83,7 +113,7 @@ def profile_view(request):
     else:
         visits_today = 1
 
-    # ✅ Dynamic Tips
+    #  Dynamic Tips
     logs = ActivityLog.objects.filter(user=request.user)
     tips = []
 
@@ -91,18 +121,18 @@ def profile_view(request):
         most_common_type = Counter(logs.values_list('activity_type', flat=True)).most_common(1)[0][0]
 
         if most_common_type == 'travel':
-            tips.append("🚗 You’ve logged a lot of travel. Try walking or biking for short distances.")
+            tips.append(" You’ve logged a lot of travel. Try walking or biking for short distances.")
         elif most_common_type == 'electricity':
-            tips.append("💡 High electricity use? Consider switching to energy-efficient appliances.")
+            tips.append(" High electricity use? Consider switching to energy-efficient appliances.")
         elif most_common_type == 'food':
-            tips.append("🥗 Eating more sustainably can lower your footprint. Try reducing meat intake.")
+            tips.append(" Eating more sustainably can lower your footprint. Try reducing meat intake.")
         elif most_common_type == 'other':
-            tips.append("🌍 Try identifying which custom activities contribute most and reduce them.")
+            tips.append(" Try identifying which custom activities contribute most and reduce them.")
 
         # General high usage check
         high_input = logs.order_by('-input_value').first()
         if high_input and high_input.input_value > 50:
-            tips.append(f"📈 You logged a large input value ({high_input.input_value}). Consider moderation!")
+            tips.append(f" You logged a large input value ({high_input.input_value}). Consider moderation!")
 
     context = {
         'visits': visits,
