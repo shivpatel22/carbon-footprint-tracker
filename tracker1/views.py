@@ -1,6 +1,4 @@
 from django.shortcuts import render
-
-# Create your views here.
 from django.shortcuts import render
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
@@ -14,8 +12,6 @@ from django.contrib.auth.decorators import login_required
 from .models import UploadRecord
 from .forms import UploadForm
 from datetime import datetime, timedelta
-
-
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from datetime import datetime, timedelta
@@ -26,6 +22,8 @@ from django.db.models import Sum
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
+from .forms import ProfilePictureForm
+
 
 @login_required
 def edit_activity(request, log_id):
@@ -254,4 +252,22 @@ def contact_view(request):
 
 def team_view(request):
     return render(request, 'tracker1/team.html')
+
+@login_required
+def view_my_profile(request):
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+
+    if request.method == 'POST':
+        form = ProfilePictureForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+    else:
+        form = ProfilePictureForm(instance=profile)
+
+    return render(request, 'tracker1/view_my_profile.html', {
+        'user': request.user,
+        'profile': profile,
+        'form': form
+    })
+
 

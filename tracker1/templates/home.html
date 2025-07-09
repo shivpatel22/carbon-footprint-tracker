@@ -5,8 +5,16 @@
     <p class="mb-4">Track your activities. Reduce your carbon emissions. Live sustainably.</p>
 
     {% if user.is_authenticated %}
-        <a href="{% url 'profile' %}" class="btn btn-success mb-2">Go to My Profile</a><br>
+        <div class="d-flex flex-column align-items-center mt-4">
+    <a href="{% url 'profile' %}" class="btn btn-success mb-3">Go to My Profile</a>
+
+    <div class="d-flex gap-3 justify-content-center">
         <a href="{% url 'charts' %}" class="btn btn-outline-dark">View My Carbon Chart</a>
+        <a href="{% url 'view_my_profile' %}" class="btn btn-outline-dark">View My Profile</a>
+    </div>
+</div>
+
+
     {% else %}
         <a href="{% url 'login' %}" class="btn btn-outline-primary me-2">Login</a>
         <a href="{% url 'register' %}" class="btn btn-primary">Register</a>

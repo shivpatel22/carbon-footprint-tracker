@@ -25,6 +25,9 @@ urlpatterns = [
     path('leaderboard/', views.leaderboard_view, name='leaderboard'),
     path('edit-log/<int:log_id>/', views.edit_activity, name='edit_activity'),
 
+    path('my-profile/', views.view_my_profile, name='view_my_profile'),
+
+
 
 
 ]
