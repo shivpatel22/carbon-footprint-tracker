@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.shortcuts import render
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import login, logout, authenticate, models
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import RegisterForm
@@ -90,9 +90,13 @@ from .models import ActivityLog
 
 @login_required
 def profile_view(request):
-    # Session-based visit tracking
-    visits = request.session.get('total_visits', 0)
-    visits += 1
+    from collections import Counter
+    from datetime import datetime, timedelta
+    from .models import ActivityLog, UserProfile
+    from django.utils.timezone import now
+    from django.db.models import Sum
+
+    visits = request.session.get('total_visits', 0) + 1
     request.session['total_visits'] = visits
 
     today = datetime.now().date()
@@ -111,40 +115,53 @@ def profile_view(request):
     else:
         visits_today = 1
 
-    #  Dynamic Tips
     logs = ActivityLog.objects.filter(user=request.user)
-    tips = []
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
 
+    # Get current month activity
+    start_of_month = now().replace(day=1)
+    co2_this_month = ActivityLog.objects.filter(
+        user=request.user,
+        date__gte=start_of_month
+    ).aggregate(total=Sum('co2_emitted'))['total'] or 0
+
+    # Compute progress
+    goal = profile.monthly_co2_goal or 0
+    progress = (co2_this_month / goal * 100) if goal > 0 else 0
+
+    # Tips
+    tips = []
     if logs.exists():
         most_common_type = Counter(logs.values_list('activity_type', flat=True)).most_common(1)[0][0]
-
         if most_common_type == 'travel':
-            tips.append(" You’ve logged a lot of travel. Try walking or biking for short distances.")
+            tips.append("You’ve logged a lot of travel. Try walking or biking for short distances.")
         elif most_common_type == 'electricity':
-            tips.append(" High electricity use? Consider switching to energy-efficient appliances.")
+            tips.append("High electricity use? Consider switching to energy-efficient appliances.")
         elif most_common_type == 'food':
-            tips.append(" Eating more sustainably can lower your footprint. Try reducing meat intake.")
+            tips.append("Eating more sustainably can lower your footprint. Try reducing meat intake.")
         elif most_common_type == 'other':
-            tips.append(" Try identifying which custom activities contribute most and reduce them.")
-
-        # General high usage check
+            tips.append("Try identifying which custom activities contribute most and reduce them.")
         high_input = logs.order_by('-input_value').first()
         if high_input and high_input.input_value > 50:
-            tips.append(f" You logged a large input value ({high_input.input_value}). Consider moderation!")
+            tips.append(f"You logged a large input value ({high_input.input_value}). Consider moderation!")
 
     context = {
         'visits': visits,
         'visits_today': visits_today,
-        'tips': tips
+        'tips': tips,
+        'profile': profile,
+        'co2_saved_kg': round(co2_this_month, 2),
+        'progress_percent': round(progress, 2),
     }
 
     response = render(request, 'tracker1/profile.html', context)
-
     expires = datetime.combine(today + timedelta(days=1), datetime.min.time())
     response.set_cookie('last_visit', today.strftime('%Y-%m-%d'), expires=expires)
     response.set_cookie('visits_today', visits_today, expires=expires)
 
     return response
+
+
 
 
 
@@ -269,5 +286,15 @@ def view_my_profile(request):
         'profile': profile,
         'form': form
     })
+
+
+@login_required
+def set_goal(request):
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    if request.method == 'POST':
+        goal = float(request.POST.get('monthly_goal', 0))
+        profile.monthly_co2_goal = goal
+        profile.save()
+    return redirect('profile')
 
 

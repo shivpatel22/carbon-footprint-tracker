@@ -1,33 +1,124 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container text-center">
-    <h2>Hello, {{ user.username }}!</h2>
-    <p>Welcome to your Carbon Footprint Tracker profile.</p>
+<div class="container py-5">
 
-    <p><strong>Total site visits this session:</strong> {{ visits }}</p>
-    <p><strong>Visits Today:</strong> {{ visits_today }}</p>
 
-    <div class="d-flex flex-wrap justify-content-center gap-2 mt-4">
-    <a href="{% url 'log_activity' %}" class="btn btn-primary px-4">Log Activity</a>
-    <a href="{% url 'dashboard' %}" class="btn btn-outline-success px-4">View Dashboard</a>
-    <a href="{% url 'charts' %}" class="btn btn-outline-info px-4">View My Carbon Chart</a>
-    <a href="{% url 'upload_file' %}" class="btn btn-warning px-4">Upload a File</a>
-    <a href="{% url 'view_my_profile' %}" class="btn btn-outline-primary px-4">Edit My Profile</a>
-    <a href="{% url 'my_uploads' %}" class="btn btn-outline-secondary px-4">View My Uploads</a>
+<div class="d-flex flex-column align-items-center mb-4">
+    {% if profile.profile_picture %}
+    <img src="{{ profile.profile_picture.url }}"
+         class="rounded-circle shadow-sm" width="100" height="100" alt="Profile Picture">
+{% else %}
+    <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+         class="rounded-circle shadow-sm" width="100" height="100" alt="Default Profile">
+{% endif %}
 
+
+    <h4 class="fw-semibold mt-3 mb-1">{{ user.get_full_name|default:user.username }}</h4>
+
+    <small class="text-muted">Member since {{ user.date_joined|date:"F Y" }}</small>
 </div>
 
 
-{% if tips %}
-<div class="alert alert-info mt-4">
-    <h5> Eco Tips Based on Your Activity:</h5>
-    <ul class="mb-0">
-        {% for tip in tips %}
-            <li>{{ tip }}</li>
-        {% endfor %}
-    </ul>
+    <div class="text-center mb-4">
+        <h2 class="fw-bold text-success">Hello, {{ user.username }}!</h2>
+        <p class="lead">Welcome to your <strong>Carbon Footprint Tracker</strong> profile.</p>
+    </div>
+
+    <div class="row justify-content-center mb-3">
+        <div class="col-auto">
+            <div class="card shadow-sm border-0 bg-light px-4 py-2 text-center">
+                <p class="mb-1"><strong>Total site visits this session:</strong> {{ visits }}</p>
+                <p class="mb-0"><strong>Visits Today:</strong> {{ visits_today }}</p>
+            </div>
+        </div>
+    </div>
+
+
+<!-- Progress Overview -->
+<div class="card shadow-sm p-4 mb-4">
+    <h5 class="text-success mb-3">🌍 Your Environmental Impact</h5>
+
+    <p class="mb-1 fw-semibold">CO₂ Saved This Month:</p>
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div class="text-success fw-bold fs-5">{{ co2_saved_kg|default:0 }} kg</div>
+        <div class="text-muted small">Goal: {{ profile.monthly_co2_goal|default:"0" }} kg</div>
+
+    </div>
+
+    <p class="mb-1 fw-semibold">Progress Towards Monthly Goal:</p>
+    <div class="progress" role="progressbar" aria-label="Carbon Goal Progress"
+         aria-valuenow="{{ progress_percent|default:0 }}" aria-valuemin="0" aria-valuemax="100">
+        <div class="progress-bar bg-success" style="width: {{ progress_percent|default:0 }}%">
+            {{ progress_percent|default:0 }}%
+        </div>
+    </div>
+</div>
+<!-- Set CO₂ Goal Button -->
+<button type="button" class="btn btn-outline-success mb-3" data-bs-toggle="modal" data-bs-target="#setGoalModal">
+    🎯 Set Monthly CO₂ Goal
+</button>
+
+    <!-- Group 1: Activity Tools -->
+<div class="card shadow-sm p-3 mb-4">
+    <h5 class="text-success mb-3"><i class="bi bi-graph-up"></i> Activity Tools</h5>
+    <div class="d-flex flex-wrap justify-content-center gap-3">
+        <a href="{% url 'log_activity' %}" class="btn btn-primary px-4">📘 Log Activity</a>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-success px-4">📊 View Dashboard</a>
+        <a href="{% url 'charts' %}" class="btn btn-outline-info px-4">📈 View Carbon Chart</a>
+    </div>
+</div>
+
+<!-- Group 2: Profile & File Management -->
+<div class="card shadow-sm p-3 mb-4">
+    <h5 class="text-primary mb-3"><i class="bi bi-person-circle"></i> Profile & File Tools</h5>
+    <div class="d-flex flex-wrap justify-content-center gap-3">
+        <a href="{% url 'upload_file' %}" class="btn btn-warning px-4">📁 Upload a File</a>
+        <a href="{% url 'view_my_profile' %}" class="btn btn-outline-primary px-4">🧑‍💼 Edit Profile</a>
+        <a href="{% url 'my_uploads' %}" class="btn btn-outline-secondary px-4">📂 View My Uploads</a>
+    </div>
+</div>
+
+
+    {% if tips %}
+<div class="card border-start border-success border-3 shadow-sm mt-4">
+    <div class="card-body">
+        <h5 class="card-title text-success mb-3">
+            🌿 Eco Tips Based on Your Activity
+        </h5>
+        <ul class="mb-0 ps-3 small text-muted">
+            {% for tip in tips %}
+                <li class="mb-1">{{ tip }}</li>
+            {% endfor %}
+        </ul>
+    </div>
 </div>
 {% endif %}
 
+
+
 </div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="setGoalModal" tabindex="-1" aria-labelledby="setGoalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="post" action="{% url 'set_goal' %}">
+      {% csrf_token %}
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="setGoalLabel">Set Monthly CO₂ Goal</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <label for="goalInput" class="form-label">Desired CO₂ (kg):</label>
+          <input type="number" name="monthly_goal" id="goalInput" class="form-control" min="0" step="0.1" required>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Save Goal</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
 {% endblock %}
